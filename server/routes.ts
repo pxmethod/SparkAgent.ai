@@ -36,7 +36,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const projectId = parseInt(req.params.id);
     const project = await storage.getProject(projectId);
     if (!project || project.userId !== req.user.id) return res.sendStatus(404);
-    
+
     const notes = await storage.getNotesByProjectId(projectId);
     res.json(notes);
   });
@@ -71,8 +71,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         compliant: analysis.compliant
       });
       res.json(panelAnalysis);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      res.status(500).json({ message: errorMessage });
     }
   });
 
@@ -81,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const projectId = parseInt(req.params.id);
     const project = await storage.getProject(projectId);
     if (!project || project.userId !== req.user.id) return res.sendStatus(404);
-    
+
     const analyses = await storage.getPanelAnalysesByProjectId(projectId);
     res.json(analyses);
   });

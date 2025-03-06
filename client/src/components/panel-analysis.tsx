@@ -13,6 +13,13 @@ interface PanelAnalysisProps {
   analyses: PanelAnalysis[];
 }
 
+interface AnalysisData {
+  compliant: boolean;
+  issues: string[];
+  recommendations: string[];
+  summary: string;
+}
+
 export default function PanelAnalysisComponent({ projectId, analyses }: PanelAnalysisProps) {
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
@@ -27,16 +34,17 @@ export default function PanelAnalysisComponent({ projectId, analyses }: PanelAna
       const res = await apiRequest("POST", `/api/projects/${projectId}/analyze`, {
         image: base64Image,
       });
-      
+
       queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/analyses`] });
       toast({
         title: "Analysis Complete",
         description: "The panel analysis has been completed successfully.",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'An unknown error occurred';
       toast({
         title: "Analysis Failed",
-        description: error.message,
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -70,64 +78,67 @@ export default function PanelAnalysisComponent({ projectId, analyses }: PanelAna
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-            {analyses.map((analysis) => (
-              <Card key={analysis.id}>
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center">
-                      {analysis.compliant ? (
-                        <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                      ) : (
-                        <XCircle className="h-5 w-5 text-red-500 mr-2" />
-                      )}
-                      <span className="font-medium">
-                        {analysis.compliant ? "NEC Compliant" : "Non-Compliant"}
+            {analyses.map((analysis) => {
+              const analysisData = analysis.analysis as AnalysisData;
+              return (
+                <Card key={analysis.id}>
+                  <CardContent className="pt-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center">
+                        {analysis.compliant ? (
+                          <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-red-500 mr-2" />
+                        )}
+                        <span className="font-medium">
+                          {analysis.compliant ? "NEC Compliant" : "Non-Compliant"}
+                        </span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        {format(new Date(analysis.createdAt!), "PPp")}
                       </span>
                     </div>
-                    <span className="text-sm text-muted-foreground">
-                      {format(new Date(analysis.createdAt), "PPp")}
-                    </span>
-                  </div>
 
-                  <div className="space-y-4">
-                    <img
-                      src={analysis.imageUrl}
-                      alt="Electrical Panel"
-                      className="w-full rounded-lg object-cover"
-                    />
-                    
-                    <div>
-                      <h4 className="font-medium mb-2">Summary</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {analysis.analysis.summary}
-                      </p>
+                    <div className="space-y-4">
+                      <img
+                        src={analysis.imageUrl}
+                        alt="Electrical Panel"
+                        className="w-full rounded-lg object-cover"
+                      />
+
+                      <div>
+                        <h4 className="font-medium mb-2">Summary</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {analysisData.summary}
+                        </p>
+                      </div>
+
+                      {analysisData.issues.length > 0 && (
+                        <div>
+                          <h4 className="font-medium mb-2">Issues</h4>
+                          <ul className="list-disc list-inside text-sm text-muted-foreground">
+                            {analysisData.issues.map((issue, index) => (
+                              <li key={index}>{issue}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {analysisData.recommendations.length > 0 && (
+                        <div>
+                          <h4 className="font-medium mb-2">Recommendations</h4>
+                          <ul className="list-disc list-inside text-sm text-muted-foreground">
+                            {analysisData.recommendations.map((rec, index) => (
+                              <li key={index}>{rec}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
-
-                    {analysis.analysis.issues.length > 0 && (
-                      <div>
-                        <h4 className="font-medium mb-2">Issues</h4>
-                        <ul className="list-disc list-inside text-sm text-muted-foreground">
-                          {analysis.analysis.issues.map((issue, index) => (
-                            <li key={index}>{issue}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {analysis.analysis.recommendations.length > 0 && (
-                      <div>
-                        <h4 className="font-medium mb-2">Recommendations</h4>
-                        <ul className="list-disc list-inside text-sm text-muted-foreground">
-                          {analysis.analysis.recommendations.map((rec, index) => (
-                            <li key={index}>{rec}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </CardContent>
       </Card>

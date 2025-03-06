@@ -54,8 +54,11 @@ export class MemStorage implements IStorage {
   async createProject(project: InsertProject & { userId: number }): Promise<Project> {
     const id = this.currentId++;
     const newProject: Project = {
-      ...project,
       id,
+      userId: project.userId,
+      name: project.name,
+      description: project.description || null,
+      status: project.status || "in_progress",
       createdAt: new Date(),
     };
     this.projects.set(id, newProject);
