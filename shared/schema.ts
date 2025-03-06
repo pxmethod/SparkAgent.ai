@@ -4,7 +4,7 @@ import { z } from "zod";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
+  email: text("email").notNull().unique(),
   password: text("password").notNull(),
 });
 
@@ -33,10 +33,25 @@ export const panelAnalyses = pgTable("panel_analyses", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
+// Base schema for both login and registration
+const baseUserSchema = createInsertSchema(users).pick({
+  email: true,
   password: true,
 });
+
+// Login schema (just email and password)
+export const loginUserSchema = baseUserSchema;
+
+// Registration schema (email, password, and confirmPassword with validation)
+export const insertUserSchema = baseUserSchema
+  .extend({
+    confirmPassword: z.string(),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 export const insertProjectSchema = createInsertSchema(projects).pick({
   name: true,
@@ -58,6 +73,7 @@ export const insertPanelAnalysisSchema = createInsertSchema(panelAnalyses).pick(
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type LoginUser = z.infer<typeof loginUserSchema>;
 export type Project = typeof projects.$inferSelect;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
 export type Note = typeof notes.$inferSelect;

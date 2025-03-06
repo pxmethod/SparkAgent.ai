@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertUserSchema } from "@shared/schema";
+import { insertUserSchema, loginUserSchema } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 import { Redirect } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,13 +14,13 @@ export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
 
   const loginForm = useForm({
-    resolver: zodResolver(insertUserSchema),
-    defaultValues: { username: "", password: "" },
+    resolver: zodResolver(loginUserSchema),
+    defaultValues: { email: "", password: "" },
   });
 
   const registerForm = useForm({
     resolver: zodResolver(insertUserSchema),
-    defaultValues: { username: "", password: "" },
+    defaultValues: { email: "", password: "", confirmPassword: "" },
   });
 
   if (user) {
@@ -46,12 +46,12 @@ export default function AuthPage() {
                   <form onSubmit={loginForm.handleSubmit((data) => loginMutation.mutate(data))} className="space-y-4">
                     <FormField
                       control={loginForm.control}
-                      name="username"
+                      name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Username</FormLabel>
+                          <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input type="email" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -83,12 +83,12 @@ export default function AuthPage() {
                   <form onSubmit={registerForm.handleSubmit((data) => registerMutation.mutate(data))} className="space-y-4">
                     <FormField
                       control={registerForm.control}
-                      name="username"
+                      name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Username</FormLabel>
+                          <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input type="email" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -100,6 +100,19 @@ export default function AuthPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input type="password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={registerForm.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirm Password</FormLabel>
                           <FormControl>
                             <Input type="password" {...field} />
                           </FormControl>
