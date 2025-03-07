@@ -17,11 +17,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function HomePage() {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<"table" | "grid">("table");
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+
   const form = useForm({
     resolver: zodResolver(insertProjectSchema),
     defaultValues: {
@@ -60,6 +63,9 @@ export default function HomePage() {
       });
     }
   };
+
+  // Calculate the effective view based on mobile status
+  const effectiveView = isMobile ? "grid" : view;
 
   return (
     <div className="min-h-screen bg-background">
@@ -141,14 +147,16 @@ export default function HomePage() {
             </DialogContent>
           </Dialog>
 
-          <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as "table" | "grid")}>
-            <ToggleGroupItem value="table" aria-label="Table view">
-              <TableIcon className="h-4 w-4" />
-            </ToggleGroupItem>
-            <ToggleGroupItem value="grid" aria-label="Grid view">
-              <LayoutGrid className="h-4 w-4" />
-            </ToggleGroupItem>
-          </ToggleGroup>
+          {!isMobile && (
+            <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as "table" | "grid")}>
+              <ToggleGroupItem value="table" aria-label="Table view">
+                <TableIcon className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="grid" aria-label="Grid view">
+                <LayoutGrid className="h-4 w-4" />
+              </ToggleGroupItem>
+            </ToggleGroup>
+          )}
         </div>
 
         {isLoading ? (
@@ -175,11 +183,11 @@ export default function HomePage() {
                   </Button>
                 </div>
               </div>
-            ) : view === "table" ? (
-              <ProjectTable projects={projects} />
+            ) : effectiveView === "table" ? (
+              <ProjectTable projects={projects || []} />
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {projects.map((project) => (
+                {projects?.map((project) => (
                   <ProjectCard key={project.id} project={project} />
                 ))}
               </div>
