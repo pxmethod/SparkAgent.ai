@@ -11,24 +11,24 @@ interface ProjectCardProps {
 
 export default function ProjectCard({ project }: ProjectCardProps) {
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <CardTitle className="text-xl">{project.name}</CardTitle>
-          <Badge variant={project.status === "completed" ? "default" : "secondary"}>
+    <Card className="h-full flex flex-col">
+      <CardHeader className="flex-none">
+        <div className="flex justify-between items-start gap-4">
+          <CardTitle className="text-xl line-clamp-2">{project.name}</CardTitle>
+          <Badge variant={project.status === "completed" ? "default" : "secondary"} className="flex-shrink-0">
             {project.status === "in_progress" ? "In Progress" : "Completed"}
           </Badge>
         </div>
       </CardHeader>
-      <CardContent>
-        <p className="text-muted-foreground line-clamp-2">{project.description}</p>
+      <CardContent className="flex-grow">
+        <p className="text-muted-foreground line-clamp-3">{project.description}</p>
         <p className="text-sm text-muted-foreground mt-4">
-          Created {format(new Date(project.createdAt), "PP")}
+          Created {format(new Date(project.createdAt!), "PP")}
         </p>
       </CardContent>
-      <CardFooter>
-        <Link href={`/project/${project.id}`}>
-          <Button className="w-full">View Project</Button>
+      <CardFooter className="pt-6">
+        <Link href={`/project/${project.id}`} className="w-full">
+          <Button className="w-full py-6 text-lg">View Project</Button>
         </Link>
       </CardFooter>
     </Card>

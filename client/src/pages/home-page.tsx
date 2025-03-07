@@ -54,22 +54,22 @@ export default function HomePage() {
     <div className="min-h-screen bg-background">
       <Navigation />
 
-      <main className="container mx-auto p-8">
-        <div className="mb-12 max-w-[800px]">
-          <h1 className="text-4xl font-bold mb-3">Your Electrical Projects</h1>
-          <p className="text-lg text-muted-foreground">
+      <main className="container mx-auto p-4 sm:p-8">
+        <div className="mb-8 sm:mb-12 max-w-[800px]">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-3">Your Electrical Projects</h1>
+          <p className="text-base sm:text-lg text-muted-foreground">
             Manage your electrical projects, ensure NEC compliance, and get AI-powered recommendations for safety and efficiency.
           </p>
         </div>
 
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button size="lg" className="mb-8">
+            <Button size="lg" className="w-full sm:w-auto mb-6 sm:mb-8 py-6 text-lg">
               <Plus className="mr-2 h-5 w-5" />
               New Project
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="w-[95vw] max-w-lg">
             <DialogHeader>
               <DialogTitle>Create New Project</DialogTitle>
             </DialogHeader>
@@ -82,7 +82,7 @@ export default function HomePage() {
                     <FormItem>
                       <FormLabel>Project Name</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} className="h-12" />
                       </FormControl>
                     </FormItem>
                   )}
@@ -94,19 +94,19 @@ export default function HomePage() {
                     <FormItem>
                       <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <Textarea {...field} />
+                        <Textarea {...field} className="min-h-[100px]" />
                       </FormControl>
                     </FormItem>
                   )}
                 />
-                <Button type="submit">Create Project</Button>
+                <Button type="submit" className="w-full py-6">Create Project</Button>
               </form>
             </Form>
           </DialogContent>
         </Dialog>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-48 bg-muted rounded-lg animate-pulse" />
             ))}
@@ -114,23 +114,23 @@ export default function HomePage() {
         ) : (
           <div>
             {projects?.length === 0 ? (
-              <div className="text-center py-16 px-4 rounded-lg border-2 border-dashed">
+              <div className="text-center py-12 sm:py-16 px-4 rounded-lg border-2 border-dashed">
                 <div className="max-w-md mx-auto">
                   <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Zap className="h-6 w-6 text-primary" />
                   </div>
                   <h2 className="text-xl font-semibold mb-2">No projects yet</h2>
-                  <p className="text-muted-foreground mb-4">
+                  <p className="text-muted-foreground mb-6">
                     Create your first project to start managing electrical work, checking NEC compliance, and getting AI-powered safety recommendations.
                   </p>
-                  <Button onClick={() => setOpen(true)} size="lg">
-                    <Plus className="mr-2 h-4 w-4" />
+                  <Button onClick={() => setOpen(true)} size="lg" className="py-6">
+                    <Plus className="mr-2 h-5 w-5" />
                     Create Your First Project
                   </Button>
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {projects.map((project) => (
                   <ProjectCard key={project.id} project={project} />
                 ))}
