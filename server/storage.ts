@@ -1,7 +1,8 @@
 import { IStorage } from "./types";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
-import { Pool } from "pg";
+import pkg from 'pg';
+const { Pool } = pkg;
 import connectPg from "connect-pg-simple";
 import session from "express-session";
 import { users, projects, notes, panelAnalyses } from "@shared/schema";
