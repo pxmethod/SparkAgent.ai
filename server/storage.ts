@@ -20,7 +20,7 @@ export class MemStorage implements IStorage {
     this.panelAnalyses = new Map();
     this.currentId = 1;
     this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000,
+      checkPeriod: 86400000, // 24 hours
     });
   }
 
@@ -30,7 +30,7 @@ export class MemStorage implements IStorage {
 
   async getUserByEmail(email: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(
-      (user) => user.email === email,
+      (user) => user.email.toLowerCase() === email.toLowerCase(),
     );
   }
 
@@ -38,8 +38,8 @@ export class MemStorage implements IStorage {
     const id = this.currentId++;
     const user: User = { 
       id,
-      email: insertUser.email,
-      password: insertUser.password
+      email: insertUser.email.toLowerCase(),
+      password: insertUser.password,
     };
     this.users.set(id, user);
     return user;
