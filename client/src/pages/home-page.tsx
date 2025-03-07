@@ -82,9 +82,9 @@ export default function HomePage() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Project Title</FormLabel>
+                      <FormLabel>Project Name</FormLabel>
                       <FormControl>
-                        <Input {...field} className="h-12" placeholder="Enter project title" />
+                        <Input {...field} placeholder="Enter project name" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -95,9 +95,9 @@ export default function HomePage() {
                   name="address"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Project Address</FormLabel>
+                      <FormLabel>Address</FormLabel>
                       <FormControl>
-                        <Input {...field} className="h-12" placeholder="Enter project address" />
+                        <Input {...field} placeholder="Enter project address" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
