@@ -23,7 +23,7 @@ export default function HomePage() {
     resolver: zodResolver(insertProjectSchema),
     defaultValues: {
       name: "",
-      address: "", // Added address field to defaultValues
+      address: "",
       description: "",
       status: "in_progress",
     },
