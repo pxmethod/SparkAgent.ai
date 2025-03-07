@@ -1,107 +1,89 @@
 import { IStorage } from "./types";
-import createMemoryStore from "memorystore";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+import { Pool } from "pg";
+import connectPg from "connect-pg-simple";
 import session from "express-session";
+import { users, projects, notes, panelAnalyses } from "@shared/schema";
 import { User, Project, Note, PanelAnalysis, InsertUser, InsertProject, InsertNote, InsertPanelAnalysis } from "@shared/schema";
+import { eq } from "drizzle-orm";
 
-const MemoryStore = createMemoryStore(session);
+const PostgresSessionStore = connectPg(session);
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private projects: Map<number, Project>;
-  private notes: Map<number, Note>;
-  private panelAnalyses: Map<number, PanelAnalysis>;
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL environment variable is required");
+}
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+const db = drizzle(pool);
+
+export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
-  currentId: number;
 
   constructor() {
-    this.users = new Map();
-    this.projects = new Map();
-    this.notes = new Map();
-    this.panelAnalyses = new Map();
-    this.currentId = 1;
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000, // 24 hours
+    this.sessionStore = new PostgresSessionStore({
+      pool,
+      createTableIfMissing: true,
     });
   }
 
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const result = await db.select().from(users).where(eq(users.id, id));
+    return result[0];
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.email.toLowerCase() === email.toLowerCase(),
-    );
+    const result = await db.select().from(users).where(eq(users.email, email.toLowerCase()));
+    return result[0];
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentId++;
-    const user: User = { 
-      id,
+    const result = await db.insert(users).values({
       email: insertUser.email.toLowerCase(),
       password: insertUser.password,
-    };
-    this.users.set(id, user);
-    return user;
+    }).returning();
+    return result[0];
   }
 
   async getProject(id: number): Promise<Project | undefined> {
-    return this.projects.get(id);
+    const result = await db.select().from(projects).where(eq(projects.id, id));
+    return result[0];
   }
 
   async getProjectsByUserId(userId: number): Promise<Project[]> {
-    return Array.from(this.projects.values()).filter(
-      (project) => project.userId === userId,
-    );
+    return await db.select().from(projects).where(eq(projects.userId, userId));
   }
 
   async createProject(project: InsertProject & { userId: number }): Promise<Project> {
-    const id = this.currentId++;
-    const newProject: Project = {
-      id,
+    const result = await db.insert(projects).values({
       userId: project.userId,
       name: project.name,
       description: project.description || null,
       status: project.status || "in_progress",
-      createdAt: new Date(),
-    };
-    this.projects.set(id, newProject);
-    return newProject;
+    }).returning();
+    return result[0];
   }
 
   async getNotesByProjectId(projectId: number): Promise<Note[]> {
-    return Array.from(this.notes.values()).filter(
-      (note) => note.projectId === projectId,
-    );
+    return await db.select().from(notes).where(eq(notes.projectId, projectId));
   }
 
   async createNote(note: InsertNote): Promise<Note> {
-    const id = this.currentId++;
-    const newNote: Note = {
-      ...note,
-      id,
-      createdAt: new Date(),
-    };
-    this.notes.set(id, newNote);
-    return newNote;
+    const result = await db.insert(notes).values(note).returning();
+    return result[0];
   }
 
   async getPanelAnalysesByProjectId(projectId: number): Promise<PanelAnalysis[]> {
-    return Array.from(this.panelAnalyses.values()).filter(
-      (analysis) => analysis.projectId === projectId,
-    );
+    return await db.select().from(panelAnalyses).where(eq(panelAnalyses.projectId, projectId));
   }
 
   async createPanelAnalysis(analysis: InsertPanelAnalysis): Promise<PanelAnalysis> {
-    const id = this.currentId++;
-    const newAnalysis: PanelAnalysis = {
-      ...analysis,
-      id,
-      createdAt: new Date(),
-    };
-    this.panelAnalyses.set(id, newAnalysis);
-    return newAnalysis;
+    const result = await db.insert(panelAnalyses).values(analysis).returning();
+    return result[0];
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
