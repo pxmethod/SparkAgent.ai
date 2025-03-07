@@ -21,7 +21,18 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         </div>
       </CardHeader>
       <CardContent className="flex-grow">
-        <p className="text-muted-foreground line-clamp-3">{project.description}</p>
+        <div className="space-y-2">
+          <p className="text-sm font-medium">Address:</p>
+          <p className="text-muted-foreground">{project.address}</p>
+
+          {project.description && (
+            <>
+              <p className="text-sm font-medium mt-4">Description:</p>
+              <p className="text-muted-foreground line-clamp-3">{project.description}</p>
+            </>
+          )}
+        </div>
+
         <p className="text-sm text-muted-foreground mt-4">
           Created {format(new Date(project.createdAt!), "PP")}
         </p>

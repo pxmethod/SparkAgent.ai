@@ -5,7 +5,7 @@ import { Plus, Zap } from "lucide-react";
 import Navigation from "@/components/navigation";
 import ProjectCard from "@/components/project-card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
@@ -14,6 +14,7 @@ import { insertProjectSchema } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function HomePage() {
   const [open, setOpen] = useState(false);
@@ -22,6 +23,7 @@ export default function HomePage() {
     resolver: zodResolver(insertProjectSchema),
     defaultValues: {
       name: "",
+      address: "", // Added address field to defaultValues
       description: "",
       status: "in_progress",
     },
@@ -80,10 +82,24 @@ export default function HomePage() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Project Name</FormLabel>
+                      <FormLabel>Project Title</FormLabel>
                       <FormControl>
-                        <Input {...field} className="h-12" />
+                        <Input {...field} className="h-12" placeholder="Enter project title" />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Project Address</FormLabel>
+                      <FormControl>
+                        <Input {...field} className="h-12" placeholder="Enter project address" />
+                      </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -92,14 +108,24 @@ export default function HomePage() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel>Description (Optional)</FormLabel>
                       <FormControl>
-                        <Textarea {...field} className="min-h-[100px]" />
+                        <Textarea {...field} className="min-h-[100px]" placeholder="Enter project description" />
                       </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full py-6">Create Project</Button>
+                <Button
+                  type="submit"
+                  className="w-full py-6"
+                  disabled={!form.formState.isValid || form.formState.isSubmitting}
+                >
+                  {form.formState.isSubmitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : null}
+                  Create Project
+                </Button>
               </form>
             </Form>
           </DialogContent>

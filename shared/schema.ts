@@ -12,6 +12,7 @@ export const projects = pgTable("projects", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
   name: text("name").notNull(),
+  address: text("address").notNull(),
   description: text("description"),
   status: text("status").notNull().default("in_progress"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -53,11 +54,17 @@ export const insertUserSchema = baseUserSchema
     path: ["confirmPassword"],
   });
 
-export const insertProjectSchema = createInsertSchema(projects).pick({
-  name: true,
-  description: true,
-  status: true,
-});
+export const insertProjectSchema = createInsertSchema(projects)
+  .pick({
+    name: true,
+    address: true,
+    description: true,
+    status: true,
+  })
+  .extend({
+    name: z.string().min(1, "Project title is required"),
+    address: z.string().min(1, "Address is required"),
+  });
 
 export const insertNoteSchema = createInsertSchema(notes).pick({
   projectId: true,
