@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { Project } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { Plus, Zap } from "lucide-react";
+import { Plus, Zap, LayoutGrid, Table as TableIcon } from "lucide-react";
 import Navigation from "@/components/navigation";
 import ProjectCard from "@/components/project-card";
+import ProjectTable from "@/components/project-table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -15,9 +16,11 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 export default function HomePage() {
   const [open, setOpen] = useState(false);
+  const [view, setView] = useState<"table" | "grid">("table");
   const { toast } = useToast();
   const form = useForm({
     resolver: zodResolver(insertProjectSchema),
@@ -70,72 +73,83 @@ export default function HomePage() {
           </p>
         </div>
 
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button size="lg" className="w-full sm:w-auto mb-6 sm:mb-8 py-6 text-lg">
-              <Plus className="mr-2 h-5 w-5" />
-              New Project
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="w-[95vw] max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Create New Project</DialogTitle>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(createProject)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Project Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Enter project name" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Address</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Enter project address" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description (Optional)</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} className="min-h-[100px]" placeholder="Enter project description" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button
-                  type="submit"
-                  className="w-full py-6"
-                  disabled={!form.formState.isValid || form.formState.isSubmitting}
-                >
-                  {form.formState.isSubmitting ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : null}
-                  Create Project
-                </Button>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+        <div className="flex flex-col sm:flex-row gap-4 justify-between items-start mb-6">
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button size="lg" className="w-full sm:w-auto py-6 text-lg">
+                <Plus className="mr-2 h-5 w-5" />
+                New Project
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="w-[95vw] max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Create New Project</DialogTitle>
+              </DialogHeader>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(createProject)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Project Title</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Enter project title" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Project Address</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Enter project address" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description (Optional)</FormLabel>
+                        <FormControl>
+                          <Textarea {...field} className="min-h-[100px]" placeholder="Enter project description" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button
+                    type="submit"
+                    className="w-full py-6"
+                    disabled={!form.formState.isValid || form.formState.isSubmitting}
+                  >
+                    {form.formState.isSubmitting ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : null}
+                    Create Project
+                  </Button>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+
+          <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as "table" | "grid")}>
+            <ToggleGroupItem value="table" aria-label="Table view">
+              <TableIcon className="h-4 w-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="grid" aria-label="Grid view">
+              <LayoutGrid className="h-4 w-4" />
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
 
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -161,6 +175,8 @@ export default function HomePage() {
                   </Button>
                 </div>
               </div>
+            ) : view === "table" ? (
+              <ProjectTable projects={projects} />
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {projects.map((project) => (
