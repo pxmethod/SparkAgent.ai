@@ -35,7 +35,12 @@ export default function HomePage() {
 
   const createProject = async (data: any) => {
     try {
-      await apiRequest("POST", "/api/projects", data);
+      await apiRequest("POST", "/api/projects", {
+        name: data.name,
+        address: data.address,
+        description: data.description,
+        status: data.status,
+      });
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       setOpen(false);
       form.reset();
@@ -43,10 +48,11 @@ export default function HomePage() {
         title: "Project created",
         description: "Your new project has been created successfully.",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'An unknown error occurred';
       toast({
         title: "Error",
-        description: error.message,
+        description: message,
         variant: "destructive",
       });
     }
