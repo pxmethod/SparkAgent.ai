@@ -28,6 +28,11 @@ async function comparePasswords(supplied: string, stored: string) {
   return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
+// Added simple logging function.  Replace with a proper logging library in production.
+const log = (message: any, ...optionalParams: any[]) => {
+  console.log(message, ...optionalParams);
+}
+
 export function setupAuth(app: Express) {
   if (!process.env.SESSION_SECRET) {
     throw new Error("SESSION_SECRET environment variable is required");
@@ -89,22 +94,33 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
+      log("Registration attempt:", req.body.email);
+
       const existingUser = await storage.getUserByEmail(req.body.email);
       if (existingUser) {
+        log("Registration failed: Email already exists");
         return res.status(400).json({ message: "Email already exists" });
       }
 
       const hashedPassword = await hashPassword(req.body.password);
+      log("Password hashed successfully");
+
       const user = await storage.createUser({
         ...req.body,
         password: hashedPassword,
       });
+      log("User created successfully:", user.id);
 
       req.login(user, (err) => {
-        if (err) return next(err);
+        if (err) {
+          log("Login after registration failed:", err);
+          return next(err);
+        }
+        log("User logged in after registration");
         res.status(201).json(user);
       });
     } catch (error) {
+      log("Registration error:", error);
       next(error);
     }
   });
