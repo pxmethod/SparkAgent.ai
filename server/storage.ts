@@ -62,6 +62,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db.insert(projects).values({
       userId: project.userId,
       name: project.name,
+      address: project.address,
       description: project.description || null,
       status: project.status || "in_progress",
     }).returning();
